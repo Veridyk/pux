@@ -11,11 +11,11 @@ import { FileState } from '../models/FileState';
 interface FileListData {
   title: string;
   message: string;
-  fileList: FileInDirectory[];
+  directoryContent: FileInDirectory[];
 }
 
 const FileList = (props: FileListData) => {
-  const { title, message, fileList } = props;
+  const { title, message, directoryContent } = props;
 
   const getIcon = (state: FileState) => {
     switch (state) {
@@ -37,7 +37,7 @@ const FileList = (props: FileListData) => {
     }
   };
 
-  if (!fileList.length) {
+  if (!directoryContent.length) {
     return (
       <Box>
         <Typography sx={{ mb: 2, mt: 4 }} variant="h6">
@@ -54,7 +54,7 @@ const FileList = (props: FileListData) => {
         {title}
       </Typography>
       <List dense={false}>
-        {fileList.map((file, index) => {
+        {directoryContent.map((file, index) => {
           return (
             <ListItem key={index}>
               <ListItemIcon>{getIcon(file.state)}</ListItemIcon>

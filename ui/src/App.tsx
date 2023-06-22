@@ -2,60 +2,47 @@ import { Box, Button, Grid, TextField, Typography } from '@mui/material';
 import { useRef, useState } from 'react';
 import './App.css';
 import FileList from './components/FileList';
+import {ErrorResponse} from "./dto/ErrorResponse";
 import { FileInDirectoryDto } from './dto/FileInDirectoryDto';
 import { FileInDirectory } from './models/FileInDirectory';
 
-const LIST_URL = 'https://localhost:7273/list?path=';
-const DIFF_URL = 'https://localhost:7273/difference?path=';
+const LIST_URL = import.meta.env.VITE_LIST_URL;
+const DIFF_URL = import.meta.env.VITE_DIFF_URL;
+
+type setCallbackType = (data: FileInDirectory[]) => void;
 
 function App() {
-  const [fileList, setFileList] = useState<FileInDirectory[]>([]);
-  const [changedList, setChangedList] = useState<FileInDirectory[]>([]);
-  const [error, setError] = useState<string>('');
-  const pathInputRef = useRef<HTMLInputElement>();
+  const [directoryContent, setDirectoryContent] = useState<FileInDirectory[]>([]);
+  const [directoryChangedContent, setDirectoryChangedContent] = useState<FileInDirectory[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const directoryInputRef = useRef<HTMLInputElement>();
 
-  const getFileList = async (): Promise<void> => {
-    const directory = pathInputRef.current?.value;
+  const getFileListResponse = async (url: string, setDataCallback : setCallbackType) : Promise<void> => {
+    const directory = directoryInputRef.current?.value;
 
     if (!directory) {
-      setError('Fill the directory please');
+      setErrorMessage('Fill the directory please');
       return;
     }
 
-    const response = await fetch(LIST_URL + directory);
-    const files = (await response.json()) as FileInDirectoryDto[];
+    const response = await fetch(url + directory);
+    const body = await response.json();
 
     if (response.status === 200) {
-      setFileList(files);
-      setError('');
+      const files = body as FileInDirectoryDto[];
+      setDataCallback(files);
+      setErrorMessage('');
     } else {
-      setError('Invalid directory');
+      const error = body as ErrorResponse;
+      setErrorMessage(error.message);
     }
-  };
+  }
 
-  const getDirectoryChanges = async (): Promise<void> => {
-    const directory = pathInputRef.current?.value;
-
-    if (!directory) {
-      setError('Fill the directory please');
-      return;
-    }
-
-    const response = await fetch(DIFF_URL + directory);
-    const files = (await response.json()) as FileInDirectoryDto[];
-
-    if (response.status === 200) {
-      setChangedList(files);
-      setError('');
-    } else {
-      setError('Invalid directory');
-    }
-  };
   return (
     <Box>
       <Box sx={{ display: 'flex' }}>
         <TextField
-          inputRef={pathInputRef}
+          inputRef={directoryInputRef}
           size={'small'}
           label="Directory"
           variant="outlined"
@@ -64,33 +51,33 @@ function App() {
         <Button
           sx={{ marginLeft: '10px' }}
           variant="contained"
-          onClick={getFileList}
+          onClick={() => getFileListResponse(LIST_URL, setDirectoryContent)}
         >
           Load content
         </Button>
         <Button
           sx={{ marginLeft: '10px' }}
           variant="contained"
-          onClick={getDirectoryChanges}
+          onClick={() => getFileListResponse(DIFF_URL, setDirectoryChangedContent)}
         >
           View changes
         </Button>
       </Box>
       <Box sx={{ display: 'flex', my: 2 }}>
-        <Typography sx={{ color: 'red' }}>{error}</Typography>
+        <Typography sx={{ color: 'red' }}>{errorMessage}</Typography>
       </Box>
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <FileList
             title="Files in directory"
-            fileList={fileList}
+            directoryContent={directoryContent}
             message="No files in directory."
           />
         </Grid>
         <Grid item xs={6}>
           <FileList
             title="Changes in Directory"
-            fileList={changedList}
+            directoryContent={directoryChangedContent}
             message="No changes in directory."
           />
         </Grid>
