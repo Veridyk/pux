@@ -1,4 +1,4 @@
 export interface ErrorResponse {
-    message: string;
-    directory: string;
+  message: string;
+  directory: string;
 }

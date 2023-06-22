@@ -2,7 +2,7 @@ import { Box, Button, Grid, TextField, Typography } from '@mui/material';
 import { useRef, useState } from 'react';
 import './App.css';
 import FileList from './components/FileList';
-import {ErrorResponse} from "./dto/ErrorResponse";
+import { ErrorResponse } from './dto/ErrorResponse';
 import { FileInDirectoryDto } from './dto/FileInDirectoryDto';
 import { FileInDirectory } from './models/FileInDirectory';
 
@@ -12,12 +12,19 @@ const DIFF_URL = import.meta.env.VITE_DIFF_URL;
 type setCallbackType = (data: FileInDirectory[]) => void;
 
 function App() {
-  const [directoryContent, setDirectoryContent] = useState<FileInDirectory[]>([]);
-  const [directoryChangedContent, setDirectoryChangedContent] = useState<FileInDirectory[]>([]);
+  const [directoryContent, setDirectoryContent] = useState<FileInDirectory[]>(
+    [],
+  );
+  const [directoryChangedContent, setDirectoryChangedContent] = useState<
+    FileInDirectory[]
+  >([]);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const directoryInputRef = useRef<HTMLInputElement>();
 
-  const getFileListResponse = async (url: string, setDataCallback : setCallbackType) : Promise<void> => {
+  const getFileListResponse = async (
+    url: string,
+    setDataCallback: setCallbackType,
+  ): Promise<void> => {
     const directory = directoryInputRef.current?.value;
 
     if (!directory) {
@@ -36,7 +43,7 @@ function App() {
       const error = body as ErrorResponse;
       setErrorMessage(error.message);
     }
-  }
+  };
 
   return (
     <Box>
@@ -58,7 +65,9 @@ function App() {
         <Button
           sx={{ marginLeft: '10px' }}
           variant="contained"
-          onClick={() => getFileListResponse(DIFF_URL, setDirectoryChangedContent)}
+          onClick={() =>
+            getFileListResponse(DIFF_URL, setDirectoryChangedContent)
+          }
         >
           View changes
         </Button>
