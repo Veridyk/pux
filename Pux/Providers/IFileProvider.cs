@@ -4,6 +4,6 @@ namespace Pux.Providers
 {
     public interface IFileProvider
     {
-        List<FileInDirectory> LoadDirectoryContent(string path);
+        IList<FileInDirectory> LoadDirectoryContent(string path);
     }
 }

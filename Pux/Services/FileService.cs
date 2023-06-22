@@ -14,7 +14,7 @@ namespace Pux.Services
             _historyProvider = historyProvder;
         }
 
-        public List<FileInDirectoryDto> GetDirectoryContent(string path)
+        public IList<FileInDirectoryDto> GetDirectoryContent(string path)
         {
             var files = _fileProvider.LoadDirectoryContent(path);
             return files.Select(file => new FileInDirectoryDto()
@@ -26,7 +26,7 @@ namespace Pux.Services
             }).ToList();
         }
 
-        public List<FileInDirectoryDto> Compare(string path)
+        public IList<FileInDirectoryDto> Compare(string path)
         {
             var actualDirectoryContent = _fileProvider.LoadDirectoryContent(path);
             var changedDirectoryContent = _historyProvider.Compare(path, actualDirectoryContent);

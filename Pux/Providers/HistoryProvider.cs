@@ -4,28 +4,19 @@ namespace Pux.Providers
 {
     public sealed class HistoryProvider : IHistoryProvider
     {
-        public Dictionary<string, List<FileInDirectory>> History { get; set; } = new Dictionary<string, List<FileInDirectory>>();
+        private Dictionary<string, IList<FileInDirectory>> History { get; set; } = new Dictionary<string, IList<FileInDirectory>>();
 
-        public List<FileInDirectory>? GetHistory(string path)
-        {
-            List<FileInDirectory>? lastDirectoryContent;
-            History.TryGetValue(path, out lastDirectoryContent);
-            return lastDirectoryContent;
-        }
+        public IList<FileInDirectory>? GetHistory(string path) => History.TryGetValue(path, out var lastDirectoryContent) ? lastDirectoryContent : null;
 
-        public void SaveHistory(string path, List<FileInDirectory> actualDirectoryContent)
+        public void SaveHistory(string path, IList<FileInDirectory> actualDirectoryContent)
         {
-            if (History.ContainsKey(path))
+            if(!History.TryAdd(path, actualDirectoryContent))
             {
                 History[path] = actualDirectoryContent;
             }
-            else
-            {
-                History.Add(path, actualDirectoryContent);
-            }
         }
 
-        public List<FileInDirectory> Compare(string path, List<FileInDirectory> actualDirectoryContent)
+        public IList<FileInDirectory> Compare(string path, IList<FileInDirectory> actualDirectoryContent)
         {
             var lastDirectoryContent = GetHistory(path);
             if (lastDirectoryContent == null)
@@ -34,19 +25,19 @@ namespace Pux.Providers
                 return new List<FileInDirectory>();
             }
 
-            List<FileInDirectory> difference = CompareFiles(actualDirectoryContent, lastDirectoryContent);
+            var difference = CompareFiles(actualDirectoryContent, lastDirectoryContent);
 
             SaveHistory(path, actualDirectoryContent);
             return difference;
         }
 
-        private List<FileInDirectory> CompareFiles(List<FileInDirectory> actualDirectoryContent, List<FileInDirectory> lastDirectoryContent)
+        private IList<FileInDirectory> CompareFiles(IList<FileInDirectory> actualDirectoryContent, IList<FileInDirectory> lastDirectoryContent)
         {
-            List<FileInDirectory> changedFiles = new List<FileInDirectory>();
+            var changedFiles = new List<FileInDirectory>();
 
             foreach (var file in actualDirectoryContent)
             {
-                var lastFile = lastDirectoryContent.Find(f => f.Path == file.Path);
+                var lastFile = lastDirectoryContent.FirstOrDefault(f => f.Path == file.Path);
                 if (lastFile != null)
                 {
                     if (lastFile.Hash != file.Hash)
@@ -56,7 +47,7 @@ namespace Pux.Providers
                         {
                             Filename = file.Filename,
                             Path = file.Path,
-                            State = FileState.MODIFIED,
+                            State = FileState.Modified,
                             Version = file.Version,
                             Hash = file.Hash,
                         });
@@ -68,7 +59,7 @@ namespace Pux.Providers
                     {
                         Filename = file.Filename,
                         Path = file.Path,
-                        State = FileState.ADDED,
+                        State = FileState.Added,
                         Version = 1,
                         Hash = file.Hash,
                     });
@@ -77,14 +68,14 @@ namespace Pux.Providers
 
             foreach (var file in lastDirectoryContent)
             {
-                var lastExistedFile = actualDirectoryContent.Find(f => f.Path == file.Path);
+                var lastExistedFile = actualDirectoryContent.FirstOrDefault(f => f.Path == file.Path);
                 if (lastExistedFile == null)
                 {
                     changedFiles.Add(new FileInDirectory()
                     {
                         Filename = file.Filename,
                         Path = file.Path,
-                        State = FileState.DELETED,
+                        State = FileState.Deleted,
                         Version = file.Version,
                         Hash = file.Hash,
                     });

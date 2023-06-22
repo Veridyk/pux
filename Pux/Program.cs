@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Pux.Dto;
 using Pux.Providers;
 using Pux.Services;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +17,9 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(
         builder =>
         {
-            builder.WithOrigins("https://localhost/", "http://localhost:7273")
-                                .AllowAnyHeader()
-                                .AllowAnyMethod();
+            builder.WithOrigins("*")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
         });
 });
 
@@ -51,11 +53,19 @@ app.MapGet("/list", (string path, [FromServices] IFileService service) =>
         var files = service.GetDirectoryContent(path);
         return Results.Ok(files);
     } 
-    catch
+    catch (Exception ex)
     {
-        return Results.BadRequest("Invalid directory: " + path);
+        var errorResponse = new ErrorResponse()
+        {
+            Directory = path,
+            Message = ex.Message
+        };
+
+        return Results.BadRequest(errorResponse);
     }
 })
+.Produces<IList<FileInDirectoryDto>>((int)HttpStatusCode.OK)
+.Produces<ErrorResponse>((int)HttpStatusCode.BadRequest)
 .WithName("List")
 .WithOpenApi();
 
@@ -71,11 +81,19 @@ app.MapGet("/difference", (string path, [FromServices] IFileService service) =>
         var entries = service.Compare(path);
         return Results.Ok(entries);
     }
-    catch
+    catch (Exception ex)
     {
-        return Results.BadRequest("Invalid directory: " + path);
+        var errorResponse = new ErrorResponse()
+        {
+            Directory = path,
+            Message = ex.Message
+        };
+
+        return Results.BadRequest(errorResponse);
     }
 })
+.Produces<IList<FileInDirectoryDto>>((int)HttpStatusCode.OK)
+.Produces<ErrorResponse>((int)HttpStatusCode.BadRequest)
 .WithName("Difference")
 .WithOpenApi();
 

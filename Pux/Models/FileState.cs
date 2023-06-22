@@ -2,9 +2,9 @@
 {
     public enum FileState
     {
-        ACTUAL = 0,
-        ADDED,
-        MODIFIED,
-        DELETED
+        Actual = 0,
+        Added,
+        Modified,
+        Deleted
     }
 }

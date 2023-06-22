@@ -4,7 +4,7 @@ namespace Pux.Services
 {
     public interface IFileService
     {
-        List<FileInDirectoryDto> GetDirectoryContent(string path);
-        List<FileInDirectoryDto> Compare(string path);
+        IList<FileInDirectoryDto> GetDirectoryContent(string path);
+        IList<FileInDirectoryDto> Compare(string path);
     }
 }
